@@ -84,7 +84,7 @@ void bhop()
     bool wasHoldingInsert = false;
     const int four = 4;
     const int five = 5;
-
+    
     std::cout << "   __       __                        __     \n  / \     /  |                      /  |\n  $$  \ / $$ | __    __   _______  _$$ | _\n  $$$  \ / $$$ |/  |  /  | /       |/ $$ |\n  $$$$ / $$$$ | $$ | $$ |/$$$$$$$ / $$$$$$ /\n  $$ $$ $$ / $$ | $$ | $$ | $$      \   $$ | __\n  $$ | $$$ / $$ | $$ \__$$ | $$$$$$ | $$ |/  |\n  $$ | $ / $$ | $$    $$ |/     $$ / $$  $$ /\n  $$ / $$ / $$$$$$$ | $$$$$$$ / $$$$/\n               /  \__$$ |\n               $$    $$ /\n                $$$$$$ / \n\n";
 
     std::cout << " Dm https://discordapp.com/users/717369125965398027 if you find any bugs or it doesnt work\n\n";
@@ -142,7 +142,8 @@ void bhop()
             int dwfFlags;
             ReadProcessMemory(game::process, (LPCVOID)(dwLocalPlayer + offset::dwfFlags), &dwfFlags, 4, nullptr);
 
-            if (dwfFlags == 129 || dwfFlags == 641 || dwfFlags == 131 || dwfFlags == 643) // checking character state (129 = Ground, 641 = Water, 131 = groundCrouching & 643 = waterCrouching)
+            // ty SpadeBd
+            if (dwfFlags & 1) // checking character state (129 = Ground, 641 = Water, 131 = groundCrouching & 643 = waterCrouching)
             {
                 WriteProcessMemory(game::process, (LPVOID*)(game::client + offset::dwForceJump), &five, sizeof(const int), 0); // writing dwForceJump forcing player to jump
                 wasBhopping = true;
