@@ -19,15 +19,15 @@ namespace game
     const int five = 5;
     const int four = 4;
 
-    uintptr_t client;
+    DWORD client;
 }
 
-uintptr_t GetModuleBaseAddress(DWORD procId, const wchar_t* modName)
+DWORD GetModuleBaseAddress(DWORD procId, const wchar_t* modName)
 {
-    uintptr_t modBaseAddr = 0;
-    HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, procId);
-    if (hSnap != INVALID_HANDLE_VALUE)
-    {
+     DWORD modBaseAddr = 0;
+     HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, procId);
+     if (hSnap != INVALID_HANDLE_VALUE)
+     {
         MODULEENTRY32 modEntry;
         modEntry.dwSize = sizeof(modEntry);
         if (Module32First(hSnap, &modEntry))
@@ -124,29 +124,37 @@ void bhop()
 
         if (!FindWindowA(NULL, name)) // checking whether window exists every frame
         {
-            std::cout << "\nL4D2 Closed, closing in 3 seconds";
-            std::this_thread::sleep_for(std::chrono::seconds(3));
+            std::cout << "\n\nL4D2 Closed, closing in 5 seconds";
+            std::this_thread::sleep_for(std::chrono::seconds(5));
             return;
         }
 
         // Variables
 
-        std::uintptr_t dwLocalPlayer;
-        ReadProcessMemory(game::process, (LPCVOID)(game::client + offset::dwLocalPlayer), &dwLocalPlayer, sizeof(std::uintptr_t), nullptr); // Getting local player
+        DWORD dwLocalPlayer;
+        ReadProcessMemory(game::process, (LPCVOID)(game::client + offset::dwLocalPlayer), &dwLocalPlayer, 4, nullptr); // Getting local player
 
         if (wasBhopping) // resetting dwForceJump state if player was bhopping last frame
             WriteProcessMemory(game::process, (LPVOID*)(game::client + offset::dwForceJump), &four, 4, 0);
 
         if (GetAsyncKeyState(VK_SPACE)) // checking whether player is holding spacebar
         {
-            int dwfFlags;
-            ReadProcessMemory(game::process, (LPCVOID)(dwLocalPlayer + offset::dwfFlags), &dwfFlags, 4, nullptr);
-
-            // ty SpadeBd
-            if (dwfFlags & 1) // checking character state (129 = Ground, 641 = Water, 131 = groundCrouching & 643 = waterCrouching)
+            int m_iHealth;
+            ReadProcessMemory(game::process, (LPCVOID)(dwLocalPlayer + offset::m_iHealth), &m_iHealth, 4, nullptr);
+            
+            if (m_iHealth != 0)
             {
-                WriteProcessMemory(game::process, (LPVOID*)(game::client + offset::dwForceJump), &five, sizeof(const int), 0); // writing dwForceJump forcing player to jump
-                wasBhopping = true;
+                int dwfFlags;
+                ReadProcessMemory(game::process, (LPCVOID)(dwLocalPlayer + offset::dwfFlags), &dwfFlags, 4, nullptr);
+
+                // ty SpadeBd
+                if (dwfFlags & 1) // checking character state (129 = Ground, 641 = Water, 131 = groundCrouching & 643 = waterCrouching)
+                {
+                    WriteProcessMemory(game::process, (LPVOID*)(game::client + offset::dwForceJump), &five, sizeof(const int), 0); // writing dwForceJump forcing player to jump
+                    wasBhopping = true;
+                }
+                else
+                    wasBhopping = false;
             }
             else
                 wasBhopping = false;
